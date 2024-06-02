@@ -34,20 +34,13 @@ public class Graph {
     }
 
     public void addEdge(String in, String out){
-//        if(!graph.containsKey(in)) {
-//            //不存在这个点则增加新边
-//            Node node = new Node(in);
-//            node.edge.put(out, 1);
-//            graph.put(in, node);
-//        } else {
-            //获得in的node
-            Node node = graph.get(in);
-            if (!node.edge.containsKey(out)) {
-                node.edge.put(out, 1);
-            } else{
-                node.edge.put(out, node.edge.get(out) + 1);
-            }
-//        }
+        //获得in的node
+        Node node = graph.get(in);
+        if (!node.edge.containsKey(out)) {
+            node.edge.put(out, 1);
+        } else{
+            node.edge.put(out, node.edge.get(out) + 1);
+        }
     }
 
     public void showDirectedGraph(){
@@ -58,7 +51,6 @@ public class Graph {
         m_graph.getModel().beginUpdate();
         //创建绘图的节点和边
         try {
-//            Object v1 = this.graph.insertVertex(parent, null, "Node 1", 20, 20, 80, 30);
             for(String name : graph.keySet()){
                 Object vertex = m_graph.insertVertex(parent, null, name, 20, 20, 80, 30);
                 vertexMap.put(name, vertex);
@@ -69,7 +61,6 @@ public class Graph {
                             vertexMap.get(nameIn), vertexMap.get(nameOut));
                 }
             }
-//            m_graph.insertEdge(parent, null, "", v1, v2);
         } finally {
             m_graph.getModel().endUpdate();
         }
