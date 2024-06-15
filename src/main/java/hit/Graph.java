@@ -1,84 +1,95 @@
 package hit;
-import javax.swing.JFrame;
 
 import com.mxgraph.layout.hierarchical.mxHierarchicalLayout;
-import com.mxgraph.view.mxGraph;
 import com.mxgraph.swing.mxGraphComponent;
-
-import java.awt.*;
+import com.mxgraph.view.mxGraph;
+import java.awt.BorderLayout;
 import java.util.HashMap;
 import java.util.Map;
+import javax.swing.JFrame;
 
-class Node{
-    //存储节点名称
-    public String name;
-    // 存储边
-    public Map<String, Integer> edge;
-
-    public Node(String name){
-        this.name = name;
-        this.edge = new HashMap<String, Integer>();
-    }
-}
-
+/**
+ * Class representing a directed graph.
+ */
 public class Graph {
-    Map<String, Node> graph;
-    public Graph(){
-        graph = new HashMap<String, Node>();
-    }
+  Map<String, Node> graph;
 
-    //可能有的没有出边，需要有一个空的Node用于绘图
-    public void addNode(String name){
-        Node node = new Node(name);
-        graph.put(name, node);
-    }
+  public Graph() {
+    graph = new HashMap<String, Node>();
+  }
 
-    public void addEdge(String in, String out){
-        //获得in的node
-        Node node = graph.get(in);
-        if (!node.edge.containsKey(out)) {
-            node.edge.put(out, 1);
-        } else{
-            node.edge.put(out, node.edge.get(out) + 1);
+  /**
+   * Constructor to initialize the graph with another Graph object.
+   *
+   * @param originalGraph the original graph to be copied
+   */
+  public Graph(Graph originalGraph) {
+    this.graph = new HashMap<>();
+    // Copy nodes and edges from originalGraph
+    for (Map.Entry<String, Node> entry : originalGraph.graph.entrySet()) {
+      String nodeName = entry.getKey();
+      Node originalNode = entry.getValue();
+      Node newNode = new Node(originalNode.toString()); // Assuming Node has a copy constructor
+      graph.put(nodeName, newNode);
+    }
+  }
+
+  // Adds a node to the graph
+  public void addNode(String name) {
+    Node node = new Node(name);
+    graph.put(name, node);
+  }
+
+  /**
+   * Adds an edge to the graph.
+   *
+   * @param in  the starting node of the edge
+   * @param out the ending node of the edge
+   */
+  public void addEdge(String in, String out) {
+    Node node = graph.get(in);
+    if (!node.edge.containsKey(out)) {
+      node.edge.put(out, 1);
+    } else {
+      node.edge.put(out, node.edge.get(out) + 1);
+    }
+  }
+
+  /**
+   * Displays the directed graph using mxGraph.
+   */
+  public void showDirectedGraph() {
+    mxGraph mxGraphInstance = new mxGraph();
+    Map<String, Object> vertexMap = new HashMap<>();
+    Object parent = mxGraphInstance.getDefaultParent();
+    mxGraphInstance.getModel().beginUpdate();
+
+    try {
+      for (String key : graph.keySet()) {
+        Object v1 = mxGraphInstance.insertVertex(parent, null, key, 20, 20, 80, 30);
+        vertexMap.put(key, v1);
+      }
+
+      for (Map.Entry<String, Node> entry : graph.entrySet()) {
+        String key = entry.getKey();
+        Node node = entry.getValue();
+        for (Map.Entry<String, Integer> edge : node.edge.entrySet()) {
+          Object v1 = vertexMap.get(key);
+          Object v2 = vertexMap.get(edge.getKey());
+          mxGraphInstance.insertEdge(parent, null, edge.getValue(), v1, v2);
         }
+      }
+    } finally {
+      mxGraphInstance.getModel().endUpdate();
     }
 
-    public void showDirectedGraph(){
-        mxGraph m_graph = new mxGraph();
-        Map<String, Object> vertexMap = new HashMap<>();
-        //初始化
-        Object parent = m_graph.getDefaultParent();
-        m_graph.getModel().beginUpdate();
-        //创建绘图的节点和边
-        try {
-            for(String name : graph.keySet()){
-                Object vertex = m_graph.insertVertex(parent, null, name, 20, 20, 80, 30);
-                vertexMap.put(name, vertex);
-            }
-            for(String nameIn : graph.keySet()){
-                for(String nameOut : graph.get(nameIn).edge.keySet()){
-                    m_graph.insertEdge(parent, null, graph.get(nameIn).edge.get(nameOut),
-                            vertexMap.get(nameIn), vertexMap.get(nameOut));
-                }
-            }
-        } finally {
-            m_graph.getModel().endUpdate();
-        }
-
-        // layout
-        mxHierarchicalLayout layout = new mxHierarchicalLayout(m_graph);
-        layout.execute(m_graph.getDefaultParent());
-        mxGraphComponent graphComponent = new mxGraphComponent(m_graph);
-        JFrame frame = new JFrame();
-        frame.getContentPane().add(graphComponent, BorderLayout.CENTER);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(800, 1000);
-        frame.setVisible(true);        // layout
-
-    }
-
-
-
+    mxHierarchicalLayout layout = new mxHierarchicalLayout(mxGraphInstance);
+    layout.execute(mxGraphInstance.getDefaultParent());
+    mxGraphComponent graphComponent = new mxGraphComponent(mxGraphInstance);
+    JFrame frame = new JFrame();
+    frame.getContentPane().add(graphComponent, BorderLayout.CENTER);
+    frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    frame.setSize(800, 1000);
+    frame.setVisible(true);
+  }
 }
-
-
